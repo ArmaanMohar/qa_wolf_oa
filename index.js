@@ -13,10 +13,8 @@ async function saveHackerNewsArticles() {
 
   // go to Hacker News
   await page.goto("https://news.ycombinator.com");
-  const table = await page.locator("table ").nth(2).allInnerTexts();
-  // console.log(table);
 
-  // get top 10 article titles and their url in hashmap where key = url and value is title
+  // get top 10 article titles and their url
   // save top 10 to csv
   // Define locators for the article rows, rank, title, and URL elements
   const rows = page.locator(".athing");
@@ -24,6 +22,7 @@ async function saveHackerNewsArticles() {
   const totalNumberOfRows = await rows.count();
   let result = [];
   for (let i = 0; i < totalNumberOfRows; i++) {
+    if (result.length >= 10) break;
     // check rank of row, where 1 <= rank <= 10
     myRow = rows.nth(i);
     // console.log(await myRow.textContent());
@@ -39,7 +38,7 @@ async function saveHackerNewsArticles() {
         .first()
         .getAttribute("href");
       // console.log(url);
-      result.push({ title, url, rank: myRank });
+      result.push({ title, url, rank: myRank.split(".")[0] });
     }
   }
   console.log(result);
@@ -54,46 +53,6 @@ async function saveHackerNewsArticles() {
     ],
   });
   await writer.writeRecords(result);
-
-  // Define locators for the main table body and its third row
-  // const mainTableBodyLocator = page.locator("#hnmain > tbody");
-  // const thirdRowLocator = mainTableBodyLocator.locator("tr:nth-child(3)");
-
-  // // console.log(await thirdRowLocator.allInnerTexts());
-  // // Extract the article rows from the third row
-  // const articleRowsLocator = thirdRowLocator.locator(".athing");
-  // const articleRowsCount = await articleRowsLocator.count();
-
-  // // Extract the titles and URLs of the top 10 articles using locators
-  // const articles = [];
-  // for (let i = 0; i < 10; i++) {
-  //   const rankElementLocator = thirdRowLocator.locator(
-  //     `tr:nth-child(${i + 1}) td.title .rank`
-  //   );
-
-  //   const rankElement = await rankElementLocator.innerText();
-  //   const rank = rankElement ? rankElement.trim() : null;
-  //   if (rank && rank === `${i + 1}.`) {
-  //     const titleElementLocator = thirdRowLocator.locator(
-  //       `tr:nth-child(${i + 1}) td.title .titleline`
-  //     );
-  //     const titleElement = await titleElementLocator.innerText("a");
-  //     const title = titleElement ? titleElement.trim() : "";
-  //     console.log(title);
-
-  //     const urlElementLocator = thirdRowLocator
-  //       .locator(`tr:nth-child(${i + 1}) td.title .titleline `)
-  //       .getByRole("link")
-  //       .first();
-  //     const urlElement = await urlElementLocator.getAttribute("href");
-  //     const url = urlElement ? urlElement.trim() : "";
-  //     console.log({ rank, title, url });
-
-  //     articles.push({ rank, title, url });
-  //   }
-  // }
-  // console.log(articles);
-  // close browser
   await browser.close();
 }
 
